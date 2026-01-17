@@ -1,47 +1,55 @@
 import { Injectable } from '@angular/core';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GeminiService {
-  private genAI: GoogleGenerativeAI;
-  private model: any;
-
-  constructor() {
-    this.genAI = new GoogleGenerativeAI(environment.geminiApiKey);
-    
-    // Try different model names in order
-    const modelNames = [
-      "gemini-1.5-pro",
-      "gemini-2.0-flash-exp", 
-      "gemini-1.5-flash",
-      "models/gemini-1.5-pro",
-      "gemini-pro"
-    ];
-    
-    // Use the first one (we'll try others if it fails)
-    this.model = this.genAI.getGenerativeModel({ model: modelNames[0] });
-    
-    console.log('Using model:', modelNames[0]);
-  }
 
   async generateText(prompt: string): Promise<string> {
+    const API_KEY = environment.geminiApiKey;
+    
+    // Use v1beta with gemini-1.5-flash (this model exists!)
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${API_KEY}`;
+    
     try {
-      const result = await this.model.generateContent(prompt);
-      const response = await result.response;
-      return response. text();
-    } catch (error:  any) {
-      console.error("Gemini Error:", error);
-      console.error("Error details:", error. message);
+      console.log('Calling Gemini API with model:  gemini-1.5-flash');
       
-      // Return a helpful error message
-      if (error.message?. includes('404')) {
-        return `Error: Model not found. Try updating @google/generative-ai package.\n\nRun: npm install @google/generative-ai@latest --legacy-peer-deps`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{
+            parts: [{
+              text: prompt
+            }]
+          }]
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('API Error Response:', errorData);
+        return `❌ Error ${response.status}: ${errorData. error?. message || 'Unknown error'}`;
+      }
+
+      const data = await response.json();
+      console.log('✅ Gemini responded successfully! ');
+      
+      // Extract the text from the response
+      const text = data.candidates?.[0]?.content?. parts?.[0]?.text;
+      
+      if (! text) {
+        return '❌ No response from Gemini';
       }
       
-      return "Error: Could not connect to Gemini. Check your API Key.";
+      return text;
+      
+    } catch (error:  any) {
+      console.error('Network Error:', error);
+      return `❌ Network Error: ${error.message}`;
     }
   }
 }

@@ -9,7 +9,7 @@ export class GeminiService {
   async generateText(prompt: string): Promise<string> {
     const API_KEY = environment.geminiApiKey;
     
-    // ✅ Use gemini-2.5-flash (it exists in your models list!)
+    // Use the working model
     const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${API_KEY}`;
     
     try {
@@ -20,16 +20,16 @@ export class GeminiService {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
+        body: JSON. stringify({
           contents: [{
             parts: [{
-              text: prompt
+              text:  prompt
             }]
           }]
         })
       });
 
-      if (!response.ok) {
+      if (! response.ok) {
         const errorData = await response.json();
         console.error('API Error Response:', errorData);
         return `❌ Error ${response.status}: ${errorData.error?.message || 'Unknown error'}`;
@@ -38,7 +38,7 @@ export class GeminiService {
       const data = await response.json();
       console.log('✅ Gemini responded successfully! ');
       
-      const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+      const text = data.candidates?.[0]?. content?.parts?.[0]?. text;
       
       if (! text) {
         return '❌ No response from Gemini';
@@ -46,7 +46,7 @@ export class GeminiService {
       
       return text;
       
-    } catch (error:  any) {
+    } catch (error: any) {
       console.error('Network Error:', error);
       return `❌ Network Error: ${error.message}`;
     }

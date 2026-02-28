@@ -299,9 +299,9 @@ $0 – $35 depending on traffic.
 
 ## Troubleshooting
 ### Receipt Not Scanning?
+You can try using [sample receipt 1](./sample%20receipt%201.jpeg)
 - Ensure high-resolution image
-- Use bright lighting
-- Limit background objects
+- Use bright lighting & Limit background objects
 - in JPEG, JPG, WEBP or PNG
 
 ### Cannot Login?
